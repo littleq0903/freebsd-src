@@ -3,29 +3,31 @@
 trigger:
 - main
 
-pool:
-  name: BSD-Pool
+jobs:
+- job: Build_OS_Image
+  displayName: 'Build OS Image Job'
+  timeoutInMinutes: 0  # Set global timeout to unlimited
+  pool:
+    name: BSD-Pool
 
-steps:
-- script: |
-    sudo cp -v -R $(Build.SourcesDirectory)/** /usr/src
-  displayName: 'Copy source code to /usr/src'
+  steps:
+  - script: |
+      sudo cp -v -R $(Build.SourcesDirectory)/** /usr/src
+    displayName: 'Copy source code to /usr/src'
 
-- script: |
-    cd /usr/src
-    sudo make -j$(sysctl -n kern.smp.cpus) buildworld buildkernel
-  displayName: 'Build world and kernel'
-  timeoutInMinutes: 0
+  - script: |
+      cd /usr/src
+      sudo make -j$(sysctl -n kern.smp.cpus) buildworld buildkernel
+    displayName: 'Build world and kernel'
 
-- script: |
-    cd /usr/src/release
-    sudo make CLOUDWARE=AZURE -DWITH_CLOUDWARE cw-azure
-  displayName: 'Build Azure image'
-  timeoutInMinutes: 0
+  - script: |
+      cd /usr/src/release
+      sudo make CLOUDWARE=AZURE -DWITH_CLOUDWARE cw-azure
+    displayName: 'Build Azure image'
 
-- task: PublishPipelineArtifact@1
-  inputs:
-    targetPath: '/usr/src/amd64.amd64/release/azure.ufs.vhdf'
-    artifactName: 'azure-image'
-    publishLocation: 'pipeline'
-  displayName: 'Publish Azure image artifact'
+  - task: PublishPipelineArtifact@1
+    inputs:
+      targetPath: '/usr/src/amd64.amd64/release/azure.ufs.vhdf'
+      artifactName: 'azure-image'
+      publishLocation: 'pipeline'
+    displayName: 'Publish Azure image artifact'
