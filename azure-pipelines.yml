@@ -13,12 +13,12 @@ steps:
 
 - script: |
     cd /usr/src
-    make -j$(sysctl -n kern.smp.cpus) buildworld buildkernel
+    sudo make -j$(sysctl -n kern.smp.cpus) buildworld buildkernel
   displayName: 'Build world and kernel'
 
 - script: |
     cd /usr/src/release
-    make CLOUDWARE=AZURE -DWITH_CLOUDWARE cw-azure
+    sudo make CLOUDWARE=AZURE -DWITH_CLOUDWARE cw-azure
   displayName: 'Build Azure image'
 
 - task: PublishPipelineArtifact@1
