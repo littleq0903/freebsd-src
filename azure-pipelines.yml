@@ -8,7 +8,6 @@ pool:
 
 steps:
 - script: |
-    sudo rm -rf /usr/src
     sudo cp -R $(Build.SourcesDirectory) /usr/src
   displayName: 'Copy source code to /usr/src'
 
