@@ -8,7 +8,7 @@ pool:
 
 steps:
 - script: |
-    sudo cp -v -R $(Build.SourcesDirectory) /usr/src
+    sudo cp -v -R $(Build.SourcesDirectory)/** /usr/src
   displayName: 'Copy source code to /usr/src'
 
 - script: |
