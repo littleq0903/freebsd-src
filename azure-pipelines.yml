@@ -27,7 +27,7 @@ jobs:
 
   - task: PublishPipelineArtifact@1
     inputs:
-      targetPath: '/usr/src/amd64.amd64/release/azure.ufs.vhdf'
+      targetPath: '/usr/obj/usr/src/amd64.amd64/release/azure.ufs.vhdf'
       artifactName: 'azure-image'
       publishLocation: 'pipeline'
     displayName: 'Publish Azure image artifact'
