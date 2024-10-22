@@ -55,7 +55,7 @@ jobs:
         # Variables (replace these with your actual values)
         RESOURCE_GROUP="yuas-bsd-rg"
         LOCATION="eastus"
-        GALLERY_NAME="FreeBSD Staging Community Gallery"
+        GALLERY_NAME="FreeBSDTestingGalleryYuas"
         IMAGE_DEFINITION="ImageDefinition"
         IMAGE_VERSION="1.0.0"
         PUBLISHER="Colin Su"
