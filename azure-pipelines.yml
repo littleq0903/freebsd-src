@@ -111,6 +111,7 @@ jobs:
           --gallery-image-definition $IMAGE_DEFINITION \
           --gallery-image-version $IMAGE_VERSION \
           --os-vhd-uri "https://$STORAGE_ACCOUNT.blob.core.windows.net/$CONTAINER_NAME/azure.ufs.vhdf" \
+          --os-vhd-storage-account $STORAGE_ACCOUNT \
           --location $LOCATION \
           --replica-count 1 \
           --storage-account-type Standard_LRS
