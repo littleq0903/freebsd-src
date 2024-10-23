@@ -34,7 +34,7 @@ jobs:
   displayName: 'Upload Image to Azure Community Image Gallery'
   dependsOn: Build_OS_Image
   pool:
-    name: Default
+    vmImage: 'ubuntu-latest'
 
   steps:
   - task: DownloadPipelineArtifact@2
