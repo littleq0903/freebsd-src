@@ -3,6 +3,9 @@
 trigger:
 - main
 
+variables:
+  buildId: $(Build.BuildId)  # Assign the build ID to a variable
+
 jobs:
 - job: Build_OS_Image
   displayName: 'Build OS Image Job'
@@ -52,10 +55,10 @@ jobs:
         LOCATION="eastus"
         GALLERY_NAME="FreeBSDTestingGalleryYuas"
         IMAGE_DEFINITION="ImageDefinition"
-        IMAGE_VERSION="1.0.0"
+        IMAGE_VERSION="1.0.$(buildId)"
         PUBLISHER="ColinSuMSFT"
-        OFFER="FREEBSD_TEST_1"
-        SKU="YourSKU"
+        OFFER="FREEBSD_14"
+        SKU="14.0-Staging"
         STORAGE_ACCOUNT="yuassa$(date +%s)"  # Unique storage account name
         CONTAINER_NAME="vhds"
 
