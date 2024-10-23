@@ -34,7 +34,7 @@ jobs:
   displayName: 'Upload Image to Azure Community Image Gallery'
   dependsOn: Build_OS_Image
   pool:
-    vmImage: 'ubuntu-latest'
+    name: Default
 
   steps:
   - task: DownloadPipelineArtifact@2
@@ -119,18 +119,5 @@ jobs:
           --location $LOCATION \
           --replica-count 1 \
           --storage-account-type Standard_LRS
-
-        # Share the image as community
-        az sig share update \
-          --resource-group $RESOURCE_GROUP \
-          --gallery-name $GALLERY_NAME \
-          --sharing-scope Community
-
-        # Optionally, set image version publishing profile
-        az sig image-version update \
-          --resource-group $RESOURCE_GROUP \
-          --gallery-name $GALLERY_NAME \
-          --gallery-image-definition $IMAGE_DEFINITION \
-          --gallery-image-version $IMAGE_VERSION \
-          --target-regions "$LOCATION"
+          
     displayName: 'Upload image to Azure Community Image Gallery'
