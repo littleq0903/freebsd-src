@@ -87,6 +87,7 @@ jobs:
           --container-name $CONTAINER_NAME \
           --name "azure.ufs.vhdf" \
           --file "$(Pipeline.Workspace)/azure.ufs.vhdf" \
+          --type page \
           --account-key $STORAGE_KEY
 
         # Create the image gallery if it doesn't exist
