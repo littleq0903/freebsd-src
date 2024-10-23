@@ -16,11 +16,6 @@ jobs:
     displayName: 'Copy source code to /usr/src'
 
   - script: |
-      cd /usr/src
-      sudo make -j$(sysctl -n kern.smp.cpus) buildworld buildkernel
-    displayName: 'Build world and kernel'
-
-  - script: |
       cd /usr/src/release
       sudo make CLOUDWARE=AZURE -DWITH_CLOUDWARE cw-azure
     displayName: 'Build Azure image'
