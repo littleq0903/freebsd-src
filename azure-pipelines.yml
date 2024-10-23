@@ -56,7 +56,7 @@ jobs:
         PUBLISHER="Colin Su"
         OFFER="FREEBSD_TEST_1"
         SKU="YourSKU"
-        STORAGE_ACCOUNT="yuasstorageaccount$(date +%s)"  # Unique storage account name
+        STORAGE_ACCOUNT="yuassa$(date +%s)"  # Unique storage account name
         CONTAINER_NAME="vhds"
 
         # Create resource group if it doesn't exist
