@@ -1,7 +1,21 @@
-# Azure Pipelines YAML file to build OS image on FreeBSD agent
-
 trigger:
 - main
+
+# Define a parameter for the architecture
+parameters:
+- name: arch
+  displayName: 'Architecture'
+  type: string
+  default: 'amd64'
+  values:
+    - 'amd64'
+    - 'arm'
+    - 'arm64'
+    - 'i386'
+    - 'powerpc'
+    - 'powerpc64'
+    - 'powerpc64le'
+    - 'riscv'
 
 variables:
   buildId: $(Build.BuildId)  # Assign the build ID to a variable
@@ -18,19 +32,59 @@ jobs:
       sudo cp -v -R $(Build.SourcesDirectory)/** /usr/src
     displayName: 'Copy source code to /usr/src'
 
+  # Set the architecture-specific variables directly in the steps
   - script: |
-      cd /usr/src
-      sudo make -j$(sysctl -n kern.smp.cpus) buildworld buildkernel
+      TARGET_ARCH="amd64"  # Default
+      if [[ '${{ parameters.arch }}' == 'amd64' ]]; then
+        TARGET_ARCH="amd64"
+      elif [[ '${{ parameters.arch }}' == 'arm' ]]; then
+        TARGET_ARCH="armv7"
+      elif [[ '${{ parameters.arch }}' == 'arm64' ]]; then
+        TARGET_ARCH="aarch64"
+      elif [[ '${{ parameters.arch }}' == 'i386' ]]; then
+        TARGET_ARCH="i386"
+      elif [[ '${{ parameters.arch }}' == 'powerpc' ]]; then
+        TARGET_ARCH="powerpc"
+      elif [[ '${{ parameters.arch }}' == 'powerpc64' ]]; then
+        TARGET_ARCH="powerpc64"
+      elif [[ '${{ parameters.arch }}' == 'powerpc64le' ]]; then
+        TARGET_ARCH="powerpc64le"
+      elif [[ '${{ parameters.arch }}' == 'riscv' ]]; then
+        TARGET_ARCH="riscv64"
+      fi
+
+      # Run the build with the resolved TARGET and TARGET_ARCH
+      sudo make -j$(sysctl -n kern.smp.cpus) -DWITHOUT_CLEAN=yes TARGET=${{ parameters.arch }} TARGET_ARCH=$TARGET_ARCH buildworld buildkernel
     displayName: 'Build world and kernel'
 
   - script: |
+      TARGET_ARCH="amd64"  # Default
+      if [[ '${{ parameters.arch }}' == 'amd64' ]]; then
+        TARGET_ARCH="amd64"
+      elif [[ '${{ parameters.arch }}' == 'arm' ]]; then
+        TARGET_ARCH="armv7"
+      elif [[ '${{ parameters.arch }}' == 'arm64' ]]; then
+        TARGET_ARCH="aarch64"
+      elif [[ '${{ parameters.arch }}' == 'i386' ]]; then
+        TARGET_ARCH="i386"
+      elif [[ '${{ parameters.arch }}' == 'powerpc' ]]; then
+        TARGET_ARCH="powerpc"
+      elif [[ '${{ parameters.arch }}' == 'powerpc64' ]]; then
+        TARGET_ARCH="powerpc64"
+      elif [[ '${{ parameters.arch }}' == 'powerpc64le' ]]; then
+        TARGET_ARCH="powerpc64le"
+      elif [[ '${{ parameters.arch }}' == 'riscv' ]]; then
+        TARGET_ARCH="riscv64"
+      fi
+
+      # Build Azure image
       cd /usr/src/release
-      sudo make CLOUDWARE=AZURE -DWITH_CLOUDWARE cw-azure
+      sudo make CLOUDWARE=AZURE -DWITH_CLOUDWARE TARGET=${{ parameters.arch }} TARGET_ARCH=$TARGET_ARCH cw-azure
     displayName: 'Build Azure image'
 
   - task: PublishPipelineArtifact@1
     inputs:
-      targetPath: '/usr/obj/usr/src/amd64.amd64/release/azure.ufs.vhdf'
+      targetPath: '/usr/obj/usr/src/${{ parameters.arch }}.$(TARGET_ARCH)/release/azure.ufs.vhdf'
       artifactName: 'azure-image'
       publishLocation: 'pipeline'
     displayName: 'Publish Azure image artifact'
