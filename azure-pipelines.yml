@@ -52,31 +52,15 @@ jobs:
       elif [[ '${{ parameters.arch }}' == 'riscv' ]]; then
         TARGET_ARCH="riscv64"
       fi
+      
+      # Export TARGET_ARCH as a pipeline variable for later steps
+      echo "##vso[task.setvariable variable=TARGET_ARCH]$TARGET_ARCH"
 
       # Run the build with the resolved TARGET and TARGET_ARCH
       sudo make -j$(sysctl -n kern.smp.cpus) -DWITHOUT_CLEAN=yes TARGET=${{ parameters.arch }} TARGET_ARCH=$TARGET_ARCH buildworld buildkernel
     displayName: 'Build world and kernel'
 
   - script: |
-      TARGET_ARCH="amd64"  # Default
-      if [[ '${{ parameters.arch }}' == 'amd64' ]]; then
-        TARGET_ARCH="amd64"
-      elif [[ '${{ parameters.arch }}' == 'arm' ]]; then
-        TARGET_ARCH="armv7"
-      elif [[ '${{ parameters.arch }}' == 'arm64' ]]; then
-        TARGET_ARCH="aarch64"
-      elif [[ '${{ parameters.arch }}' == 'i386' ]]; then
-        TARGET_ARCH="i386"
-      elif [[ '${{ parameters.arch }}' == 'powerpc' ]]; then
-        TARGET_ARCH="powerpc"
-      elif [[ '${{ parameters.arch }}' == 'powerpc64' ]]; then
-        TARGET_ARCH="powerpc64"
-      elif [[ '${{ parameters.arch }}' == 'powerpc64le' ]]; then
-        TARGET_ARCH="powerpc64le"
-      elif [[ '${{ parameters.arch }}' == 'riscv' ]]; then
-        TARGET_ARCH="riscv64"
-      fi
-
       # Build Azure image
       cd /usr/src/release
       sudo make CLOUDWARE=AZURE -DWITH_CLOUDWARE TARGET=${{ parameters.arch }} TARGET_ARCH=$TARGET_ARCH cw-azure
