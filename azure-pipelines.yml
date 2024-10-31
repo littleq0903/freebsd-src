@@ -75,6 +75,7 @@ jobs:
 
 - job: Upload_Image_to_Azure_Community_Gallery
   displayName: 'Upload image to Azure Community Image Gallery'
+  dependsOn: Build_OS_Image
   pool:
     name: Default
   steps:
