@@ -7,12 +7,12 @@ jobs:
       scriptType: 'bash'
       scriptLocation: 'inlineScript'
       inlineScript: |
-        echo "##vso[task.setvariable variable=myOutputVar;isoutput=true]this is from job A"
+        echo "##vso[task.setvariable variable=OUTPUT_VAR;isoutput=true]this is from job A"
     name: passOutput
 - job: B
   dependsOn: A
   variables:
-    myVarFromJobA: $[ dependencies.A.outputs['passOutput.myOutputVar'] ]  
+    VAR_FROM_JOB_A: $[ dependencies.A.outputs['passOutput.OUTPUT_VAR'] ]  
   steps:
   - script: |
-     echo $(myVarFromJobA)
+     echo $(VAR_FROM_JOB_A)
