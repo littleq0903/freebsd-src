@@ -57,7 +57,7 @@ jobs:
       echo "##vso[task.setvariable variable=TARGET_ARCH]$TARGET_ARCH"
 
       # Run the build with the resolved TARGET and TARGET_ARCH
-      sudo make -j$(sysctl -n kern.smp.cpus) -DWITHOUT_CLEAN=yes TARGET=${{ parameters.arch }} TARGET_ARCH=$TARGET_ARCH buildworld buildkernel
+      #sudo make -j$(sysctl -n kern.smp.cpus) -DWITHOUT_CLEAN=yes TARGET=${{ parameters.arch }} TARGET_ARCH=$TARGET_ARCH buildworld buildkernel
     displayName: 'Build world and kernel'
 
   - script: |
@@ -162,5 +162,46 @@ jobs:
           --location $LOCATION \
           --replica-count 1 \
           --storage-account-type Standard_LRS
+
+          # Expose variables to the next job
+          echo "##vso[task.setvariable variable=RESOURCE_GROUP]$RESOURCE_GROUP"
+          echo "##vso[task.setvariable variable=GALLERY_NAME]$GALLERY_NAME"
+          echo "##vso[task.setvariable variable=IMAGE_DEFINITION]$IMAGE_DEFINITION"
+          echo "##vso[task.setvariable variable=IMAGE_VERSION]$IMAGE_VERSION"
+          echo "##vso[task.setvariable variable=LOCATION]$LOCATION"
           
     displayName: 'Upload image to Azure Community Image Gallery'
+
+- job: CreateAndTestVM
+  displayName: 'Create and Test VM'
+  dependsOn: Upload_Image_to_Azure_Community_Gallery
+  pool:
+    vmImage: 'ubuntu-latest'
+  steps:
+    - script: |
+        # Generate a random 5-letter string
+        RANDOM_GUID=$(cat /dev/urandom | tr -dc 'a-z' | fold -w 5 | head -n 1)
+        VM_NAME="TestVM-$IMAGE_VERSION-$RANDOM_GUID"
+
+        # Create the VM
+        az vm create \
+          --resource-group $RESOURCE_GROUP \
+          --name $VM_NAME \
+          --image $RESOURCE_GROUP/$GALLERY_NAME/$IMAGE_DEFINITION/$IMAGE_VERSION \
+          --admin-username azureuser \
+          --generate-ssh-keys \
+          --location $LOCATION
+
+        # Run a test command on the VM
+        az vm run-command invoke \
+          --resource-group $RESOURCE_GROUP \
+          --name $VM_NAME \
+          --command-id RunShellScript \
+          --scripts "echo 123"
+
+        # Delete the VM
+        az vm delete \
+          --resource-group $RESOURCE_GROUP \
+          --name $VM_NAME \
+          --yes
+      displayName: 'Create VM, Run Test Command, and Delete VM'
