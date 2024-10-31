@@ -74,84 +74,12 @@ jobs:
     displayName: 'Publish Azure image artifact'
 
 - job: Upload_Image_to_Azure_Community_Gallery
-  displayName: 'Upload Image to Azure Community Image Gallery'
-  dependsOn: Build_OS_Image
+  displayName: 'Upload image to Azure Community Image Gallery'
   pool:
-    name: Default
-
+    vmImage: 'ubuntu-latest'
   steps:
-  - task: DownloadPipelineArtifact@2
-    inputs:
-      artifactName: 'azure-image'
-    displayName: 'Download Azure image artifact'
-
-  - task: AzureCLI@2
-    inputs:
-      azureSubscription: '8f5d9c09-fe03-4887-968e-f797aa249c7b'  # Replace with your Azure service connection name
-      scriptType: 'bash'
-      scriptLocation: 'inlineScript'
-      inlineScript: |
-        set -e  # Exit on any error
-
-        # Variables (replace these with your actual values)
-        RESOURCE_GROUP="yuas-bsd-rg"
-        LOCATION="eastus"
-        GALLERY_NAME="FreeBSDTestingGalleryYuas"
-        IMAGE_DEFINITION="FreeBSD-14.0-Testing"
-        IMAGE_VERSION="1.0.$(buildId)"
-        PUBLISHER="ColinSuMSFT"
-        OFFER="FREEBSD_14"
-        SKU="14.0-Testing"
-        STORAGE_ACCOUNT="yuassa$(date +%s)"  # Unique storage account name
-        CONTAINER_NAME="vhds"
-
-        # Create resource group if it doesn't exist
-        az group create --name $RESOURCE_GROUP --location $LOCATION
-
-        # Create storage account
-        az storage account create \
-          --name $STORAGE_ACCOUNT \
-          --resource-group $RESOURCE_GROUP \
-          --location $LOCATION \
-          --sku Standard_LRS
-
-        # Get storage account key
-        STORAGE_KEY=$(az storage account keys list \
-          --account-name $STORAGE_ACCOUNT \
-          --resource-group $RESOURCE_GROUP \
-          --query '[0].value' -o tsv)
-
-        # Create container
-        az storage container create \
-          --name $CONTAINER_NAME \
-          --account-name $STORAGE_ACCOUNT \
-          --account-key $STORAGE_KEY
-
-        # Upload the VHD file
-        az storage blob upload \
-          --account-name $STORAGE_ACCOUNT \
-          --container-name $CONTAINER_NAME \
-          --name "azure.ufs.vhdf" \
-          --file "$(Pipeline.Workspace)/azure.ufs.vhdf" \
-          --type page \
-          --account-key $STORAGE_KEY
-
-        # Create the image gallery if it doesn't exist
-        az sig create \
-          --resource-group $RESOURCE_GROUP \
-          --gallery-name $GALLERY_NAME
-
-        # Create the image definition if it doesn't exist
-        az sig image-definition create \
-          --resource-group $RESOURCE_GROUP \
-          --gallery-name $GALLERY_NAME \
-          --gallery-image-definition $IMAGE_DEFINITION \
-          --publisher "$PUBLISHER" \
-          --offer "$OFFER" \
-          --sku "$SKU" \
-          --os-type Linux
-
-        # Create the image version
+    - script: |
+        # Your existing script to upload the image
         az sig image-version create \
           --resource-group $RESOURCE_GROUP \
           --gallery-name $GALLERY_NAME \
@@ -163,20 +91,25 @@ jobs:
           --replica-count 1 \
           --storage-account-type Standard_LRS
 
-          # Expose variables to the next job
-          echo "##vso[task.setvariable variable=RESOURCE_GROUP]$RESOURCE_GROUP"
-          echo "##vso[task.setvariable variable=GALLERY_NAME]$GALLERY_NAME"
-          echo "##vso[task.setvariable variable=IMAGE_DEFINITION]$IMAGE_DEFINITION"
-          echo "##vso[task.setvariable variable=IMAGE_VERSION]$IMAGE_VERSION"
-          echo "##vso[task.setvariable variable=LOCATION]$LOCATION"
-          
-    displayName: 'Upload image to Azure Community Image Gallery'
+        # Expose variables to the next job
+        echo "##vso[task.setvariable variable=RESOURCE_GROUP;isoutput=true]$RESOURCE_GROUP"
+        echo "##vso[task.setvariable variable=GALLERY_NAME;isoutput=true]$GALLERY_NAME"
+        echo "##vso[task.setvariable variable=IMAGE_DEFINITION;isoutput=true]$IMAGE_DEFINITION"
+        echo "##vso[task.setvariable variable=IMAGE_VERSION;isoutput=true]$IMAGE_VERSION"
+        echo "##vso[task.setvariable variable=LOCATION;isoutput=true]$LOCATION"
+      displayName: 'Upload image and set variables'
 
 - job: CreateAndTestVM
   displayName: 'Create and Test VM'
   dependsOn: Upload_Image_to_Azure_Community_Gallery
   pool:
     vmImage: 'ubuntu-latest'
+  variables:
+    RESOURCE_GROUP: $[ dependencies.Upload_Image_to_Azure_Community_Gallery.outputs['RESOURCE_GROUP'] ]
+    GALLERY_NAME: $[ dependencies.Upload_Image_to_Azure_Community_Gallery.outputs['GALLERY_NAME'] ]
+    IMAGE_DEFINITION: $[ dependencies.Upload_Image_to_Azure_Community_Gallery.outputs['IMAGE_DEFINITION'] ]
+    IMAGE_VERSION: $[ dependencies.Upload_Image_to_Azure_Community_Gallery.outputs['IMAGE_VERSION'] ]
+    LOCATION: $[ dependencies.Upload_Image_to_Azure_Community_Gallery.outputs['LOCATION'] ]
   steps:
     - script: |
         # Generate a random 5-letter string
@@ -190,7 +123,14 @@ jobs:
         echo "IMAGE_VERSION: $IMAGE_VERSION"
         echo "LOCATION: $LOCATION"
         echo "VM_NAME: $VM_NAME"
-        
+
+        # Ensure variables are not empty
+        if [ -z "$RESOURCE_GROUP" ]; then echo "RESOURCE_GROUP is empty"; exit 1; fi
+        if [ -z "$GALLERY_NAME" ]; then echo "GALLERY_NAME is empty"; exit 1; fi
+        if [ -z "$IMAGE_DEFINITION" ]; then echo "IMAGE_DEFINITION is empty"; exit 1; fi
+        if [ -z "$IMAGE_VERSION" ]; then echo "IMAGE_VERSION is empty"; exit 1; fi
+        if [ -z "$LOCATION" ]; then echo "LOCATION is empty"; exit 1; fi
+
         # Create the VM
         az vm create \
           --resource-group $RESOURCE_GROUP \
