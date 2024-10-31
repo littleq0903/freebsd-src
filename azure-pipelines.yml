@@ -183,6 +183,14 @@ jobs:
         RANDOM_GUID=$(cat /dev/urandom | tr -dc 'a-z' | fold -w 5 | head -n 1)
         VM_NAME="TestVM-$IMAGE_VERSION-$RANDOM_GUID"
 
+        # Display all the variables set in the pipeline
+        echo "RESOURCE_GROUP: $RESOURCE_GROUP"
+        echo "GALLERY_NAME: $GALLERY_NAME"
+        echo "IMAGE_DEFINITION: $IMAGE_DEFINITION"
+        echo "IMAGE_VERSION: $IMAGE_VERSION"
+        echo "LOCATION: $LOCATION"
+        echo "VM_NAME: $VM_NAME"
+        
         # Create the VM
         az vm create \
           --resource-group $RESOURCE_GROUP \
