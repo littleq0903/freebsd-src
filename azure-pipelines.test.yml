@@ -1,13 +1,18 @@
 jobs:
 - job: A
   steps:
-  - bash: |
-     echo "##vso[task.setvariable variable=myOutputVar;isoutput=true]this is from job A"
+  - task: AzureCLI@2
+    inputs:
+      azureSubscription: '8f5d9c09-fe03-4887-968e-f797aa249c7b'  # Replace with your Azure service connection name
+      scriptType: 'bash'
+      scriptLocation: 'inlineScript'
+      inlineScript: |
+        echo "##vso[task.setvariable variable=myOutputVar;isoutput=true]this is from job A"
     name: passOutput
 - job: B
   dependsOn: A
   variables:
     myVarFromJobA: $[ dependencies.A.outputs['passOutput.myOutputVar'] ]  
   steps:
-  - bash: |
+  - script: |
      echo $(myVarFromJobA)
