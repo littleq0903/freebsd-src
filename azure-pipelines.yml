@@ -188,7 +188,7 @@ jobs:
     - script: |
         # Generate a random 5-letter string
         RANDOM_GUID=$(cat /dev/urandom | tr -dc 'a-z' | fold -w 5 | head -n 1)
-        VM_NAME="TestVM-$imageVersion-$RANDOM_GUID"
+        VM_NAME="TestVM-$(imageVersion)-$RANDOM_GUID"
 
         # Display all the variables set in the pipeline
         echo "RESOURCE_GROUP: $(resourceGroup)"
@@ -199,31 +199,31 @@ jobs:
         echo "VM_NAME: $VM_NAME"
 
         # Ensure variables are not empty
-        if [ -z "$resourceGroup" ]; then echo "resourceGroup is empty"; exit 1; fi
-        if [ -z "$galleryName" ]; then echo "galleryName is empty"; exit 1; fi
-        if [ -z "$imageDefinition" ]; then echo "imageDefinition is empty"; exit 1; fi
-        if [ -z "$imageVersion" ]; then echo "imageVersion is empty"; exit 1; fi
-        if [ -z "$location" ]; then echo "location is empty"; exit 1; fi
+        if [ -z "$(resourceGroup)" ]; then echo "resourceGroup is empty"; exit 1; fi
+        if [ -z "$(galleryName)" ]; then echo "galleryName is empty"; exit 1; fi
+        if [ -z "$(imageDefinition)" ]; then echo "imageDefinition is empty"; exit 1; fi
+        if [ -z "$(imageVersion)" ]; then echo "imageVersion is empty"; exit 1; fi
+        if [ -z "$(location)" ]; then echo "location is empty"; exit 1; fi
 
         # Create the VM
         az vm create \
-          --resource-group $resourceGroup \
+          --resource-group $(resourceGroup) \
           --name $VM_NAME \
-          --image $resourceGroup/$galleryName/$imageDefinition/$imageVersion \
+          --image $(resourceGroup)/$(galleryName)/$(imageDefinition)/$(imageVersion) \
           --admin-username azureuser \
           --generate-ssh-keys \
-          --location $location
+          --location $(location)
 
         # Run a test command on the VM
         az vm run-command invoke \
-          --resource-group $resourceGroup \
+          --resource-group $(resourceGroup) \
           --name $VM_NAME \
           --command-id RunShellScript \
           --scripts "echo 123"
 
         # Delete the VM
         az vm delete \
-          --resource-group $resourceGroup \
+          --resource-group $(resourceGroup) \
           --name $VM_NAME \
           --yes
       displayName: 'Create VM, Run Test Command, and Delete VM'
