@@ -18,7 +18,7 @@ parameters:
     - 'riscv'
 
 variables:
-  buildId: $(Build.BuildId)  # Assign the build ID to a variable
+  BuildId: $(Date:yyyyMMdd)$(Build.BuildId)  # Combine date and build ID
 
 jobs:
 - job: BuildOSImage
@@ -210,11 +210,14 @@ jobs:
         if [ -z "$(imageVersion)" ]; then echo "imageVersion is empty"; exit 1; fi
         if [ -z "$(location)" ]; then echo "location is empty"; exit 1; fi
 
+        # Construct the image reference
+        IMAGE_REFERENCE="/subscriptions/8f5d9c09-fe03-4887-968e-f797aa249c7b/resourceGroups/$(resourceGroup)/providers/Microsoft.Compute/galleries/$(galleryName)/images/$(imageDefinition)/versions/$(imageVersion)"
+
         # Create the VM
         az vm create \
           --resource-group $(resourceGroup) \
           --name $VM_NAME \
-          --image $(resourceGroup)/$(galleryName)/$(imageDefinition)/$(imageVersion) \
+          --image $IMAGE_REFERENCE \
           --admin-username azureuser \
           --generate-ssh-keys \
           --location $(location)
