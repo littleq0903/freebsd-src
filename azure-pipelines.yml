@@ -104,6 +104,13 @@ jobs:
         STORAGE_ACCOUNT="yuassa$(date +%s)"  # Unique storage account name
         CONTAINER_NAME="vhds"
 
+        # Expose variables to the next job
+        echo "##vso[task.setvariable variable=resourceGroup;isoutput=true]$RESOURCE_GROUP"
+        echo "##vso[task.setvariable variable=galleryName;isoutput=true]$GALLERY_NAME"
+        echo "##vso[task.setvariable variable=imageDefinition;isoutput=true]$IMAGE_DEFINITION"
+        echo "##vso[task.setvariable variable=imageVersion;isoutput=true]$IMAGE_VERSION"
+        echo "##vso[task.setvariable variable=location;isoutput=true]$LOCATION"
+
         # Create resource group if it doesn't exist
         az group create --name $RESOURCE_GROUP --location $LOCATION
 
@@ -162,12 +169,7 @@ jobs:
           --replica-count 1 \
           --storage-account-type Standard_LRS
 
-        # Expose variables to the next job
-        echo "##vso[task.setvariable variable=resourceGroup;isoutput=true]$RESOURCE_GROUP"
-        echo "##vso[task.setvariable variable=galleryName;isoutput=true]$GALLERY_NAME"
-        echo "##vso[task.setvariable variable=imageDefinition;isoutput=true]$IMAGE_DEFINITION"
-        echo "##vso[task.setvariable variable=imageVersion;isoutput=true]$IMAGE_VERSION"
-        echo "##vso[task.setvariable variable=location;isoutput=true]$LOCATION"
+
     displayName: 'Upload image and set variables'
     name: uploadImage
 
