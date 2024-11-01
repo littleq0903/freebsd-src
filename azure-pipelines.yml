@@ -16,6 +16,10 @@ parameters:
     - 'powerpc64'
     - 'powerpc64le'
     - 'riscv'
+- name: deleteVM
+  displayName: 'Delete VM after creation'
+  type: boolean
+  default: true
 
 variables:
   BuildId: $(Build.BuildId)  # Combine date and build ID
@@ -185,12 +189,7 @@ jobs:
     imageVersion: $[ dependencies.UploadImageToCommunityGallery.outputs['uploadImage.imageVersion'] ]
     location: $[ dependencies.UploadImageToCommunityGallery.outputs['uploadImage.location'] ]
   steps:
-  - task: AzureCLI@2
-    inputs:
-      azureSubscription: '8f5d9c09-fe03-4887-968e-f797aa249c7b'  # Replace with your Azure service connection name
-      scriptType: 'bash'
-      scriptLocation: 'inlineScript'
-      inlineScript: |
+    - script: |
         # Generate a random 5-letter string
         RANDOM_GUID=$(cat /dev/urandom | tr -dc 'a-z' | fold -w 5 | head -n 1)
         VM_NAME="TestVM-$(imageVersion)-$RANDOM_GUID"
@@ -212,7 +211,9 @@ jobs:
 
         # Construct the image reference
         IMAGE_REFERENCE="/subscriptions/8f5d9c09-fe03-4887-968e-f797aa249c7b/resourceGroups/$(resourceGroup)/providers/Microsoft.Compute/galleries/$(galleryName)/images/$(imageDefinition)/versions/$(imageVersion)"
+        echo "Image reference: $IMAGE_REFERENCE"
 
+        echo "Creating VM..."
         # Create the VM
         az vm create \
           --resource-group $(resourceGroup) \
@@ -222,9 +223,11 @@ jobs:
           --generate-ssh-keys \
           --location $(location)
 
+        echo "waiting for VM to be ready..."
         # Wait for the VM to be ready
         sleep 60
 
+        echo "Running a test command on the VM..."
         # Run a test command on the VM
         az vm run-command invoke \
           --resource-group $(resourceGroup) \
@@ -232,9 +235,14 @@ jobs:
           --command-id RunShellScript \
           --scripts "echo 123"
 
-        # Delete the VM
-        #az vm delete \
-        # --resource-group $(resourceGroup) \
-        # --name $VM_NAME \
-        # --yes
-    displayName: 'Create VM, Run Test Command, and Delete VM'
+        if [ ${{ parameters.deleteVM }} = true ]; then
+          echo "Deleting the VM..."
+          # Delete the VM
+          az vm delete \
+            --resource-group $(resourceGroup) \
+            --name $VM_NAME \
+            --yes
+        else
+          echo "Skipping VM deletion as per configuration."
+        fi
+      displayName: 'Create VM, Run Test Command, and Delete VM'
