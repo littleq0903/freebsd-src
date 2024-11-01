@@ -222,6 +222,9 @@ jobs:
           --generate-ssh-keys \
           --location $(location)
 
+        # Wait for the VM to be ready
+        sleep 60
+
         # Run a test command on the VM
         az vm run-command invoke \
           --resource-group $(resourceGroup) \
@@ -230,8 +233,8 @@ jobs:
           --scripts "echo 123"
 
         # Delete the VM
-        az vm delete \
-          --resource-group $(resourceGroup) \
-          --name $VM_NAME \
-          --yes
+        #az vm delete \
+        # --resource-group $(resourceGroup) \
+        # --name $VM_NAME \
+        # --yes
     displayName: 'Create VM, Run Test Command, and Delete VM'
