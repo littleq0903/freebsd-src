@@ -1,5 +1,5 @@
 jobs:
-- job: A
+- job: A_Job
   steps:
   - task: AzureCLI@2
     inputs:
@@ -7,12 +7,12 @@ jobs:
       scriptType: 'bash'
       scriptLocation: 'inlineScript'
       inlineScript: |
-        echo "##vso[task.setvariable variable=OUTPUT_VAR;isoutput=true]this is from job A"
+        echo "##vso[task.setvariable variable=outputVar;isoutput=true]this is from job A"
     name: passOutput
 - job: B
-  dependsOn: A
+  dependsOn: A_Job
   variables:
-    VAR_FROM_JOB_A: $[ dependencies.A.outputs['passOutput.OUTPUT_VAR'] ]  
+    varFromJobA: $[ dependencies.A_Job.outputs['passOutput.outputVar'] ]  
   steps:
   - script: |
-     echo $(VAR_FROM_JOB_A)
+     echo $(varFromJobA)
