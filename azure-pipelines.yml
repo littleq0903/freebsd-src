@@ -168,8 +168,8 @@ jobs:
         echo "##vso[task.setvariable variable=imageDefinition;isoutput=true]$IMAGE_DEFINITION"
         echo "##vso[task.setvariable variable=imageVersion;isoutput=true]$IMAGE_VERSION"
         echo "##vso[task.setvariable variable=location;isoutput=true]$LOCATION"
-      displayName: 'Upload image and set variables'
-      name: uploadImage
+    displayName: 'Upload image and set variables'
+    name: uploadImage
 
 - job: CreateAndTestVM
   displayName: 'Create and Test VM'
@@ -195,6 +195,13 @@ jobs:
         echo "IMAGE_VERSION: $imageVersion"
         echo "LOCATION: $location"
         echo "VM_NAME: $VM_NAME"
+
+        # Ensure variables are not empty
+        if [ -z "$resourceGroup" ]; then echo "resourceGroup is empty"; exit 1; fi
+        if [ -z "$galleryName" ]; then echo "galleryName is empty"; exit 1; fi
+        if [ -z "$imageDefinition" ]; then echo "imageDefinition is empty"; exit 1; fi
+        if [ -z "$imageVersion" ]; then echo "imageVersion is empty"; exit 1; fi
+        if [ -z "$location" ]; then echo "location is empty"; exit 1; fi
 
         # Create the VM
         az vm create \
