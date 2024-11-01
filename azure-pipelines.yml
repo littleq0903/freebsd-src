@@ -170,7 +170,7 @@ jobs:
           --storage-account-type Standard_LRS
 
 
-    displayName: 'Upload image and set variables'
+    displayName: 'Upload image to the Community Gallery'
     name: uploadImage
 
 - job: CreateAndTestVM
@@ -191,11 +191,11 @@ jobs:
         VM_NAME="TestVM-$imageVersion-$RANDOM_GUID"
 
         # Display all the variables set in the pipeline
-        echo "RESOURCE_GROUP: $resourceGroup"
-        echo "GALLERY_NAME: $galleryName"
-        echo "IMAGE_DEFINITION: $imageDefinition"
-        echo "IMAGE_VERSION: $imageVersion"
-        echo "LOCATION: $location"
+        echo "RESOURCE_GROUP: $(resourceGroup)"
+        echo "GALLERY_NAME: $(galleryName)"
+        echo "IMAGE_DEFINITION: $(imageDefinition)"
+        echo "IMAGE_VERSION: $(imageVersion)"
+        echo "LOCATION: $(location)"
         echo "VM_NAME: $VM_NAME"
 
         # Ensure variables are not empty
