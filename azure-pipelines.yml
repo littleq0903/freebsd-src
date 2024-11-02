@@ -222,6 +222,7 @@ jobs:
           --admin-username azureuser \
           --generate-ssh-keys \
           --location $(location)
+          --size Standard_D2s_v3
 
         echo "waiting for VM to be ready..."
         # Wait for the VM to be ready
