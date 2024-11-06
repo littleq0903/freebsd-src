@@ -61,7 +61,7 @@ jobs:
       echo "##vso[task.setvariable variable=TARGET_ARCH]$TARGET_ARCH"
 
       # Run the build with the resolved TARGET and TARGET_ARCH
-      #sudo make -j$(sysctl -n kern.smp.cpus) -DWITHOUT_CLEAN=yes TARGET=${{ parameters.arch }} TARGET_ARCH=$TARGET_ARCH buildworld buildkernel
+      sudo make -j$(sysctl -n kern.smp.cpus) -DWITHOUT_CLEAN=yes TARGET=${{ parameters.arch }} TARGET_ARCH=$TARGET_ARCH buildworld buildkernel
     displayName: 'Build world and kernel'
 
   - script: |
