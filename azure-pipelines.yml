@@ -231,7 +231,7 @@ jobs:
 
         echo "waiting for VM to be ready..."
         # Wait for the VM to be ready
-        sleep 60
+        sleep 300
 
         echo "Running a test command on the VM..."
         # Run a test command on the VM
