@@ -231,7 +231,17 @@ jobs:
 
         echo "waiting for VM to be ready..."
         # Wait for the VM to be ready
-        sleep 300
+        sleep 60
+
+        echo "Retrieving public IP address..."
+        # Get the public IP address
+        PUBLIC_IP=$(az vm show --resource-group $(resourceGroup) --name $VM_NAME --query "publicIpAddress" -o tsv)
+
+        echo "Installing azure-agent on the VM..."
+        # Install azure-agent using SSH
+        ssh -i ~/.ssh/id_rsa azureuser@$PUBLIC_IP "pkg install -y azure-agent"
+
+        sleep 20
 
         echo "Running kyua tests on the VM..."
         # Run kyua tests on the VM and generate a JUnit report
