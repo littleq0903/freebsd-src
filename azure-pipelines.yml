@@ -219,13 +219,13 @@ jobs:
         echo "Image reference: $IMAGE_REFERENCE"
 
         echo "Creating VM..."
-        # Create the VM
+        # Create the VM with admin password
         az vm create \
           --resource-group $(resourceGroup) \
           --name $VM_NAME \
           --image $IMAGE_REFERENCE \
           --admin-username azureuser \
-          --generate-ssh-keys \
+          --admin-password "test1234" \
           --location $(location) \
           --size Standard_D2s_v3
 
@@ -238,8 +238,8 @@ jobs:
         PUBLIC_IP=$(az vm show --resource-group $(resourceGroup) --name $VM_NAME --query "publicIpAddress" -o tsv)
 
         echo "Installing azure-agent on the VM..."
-        # Install azure-agent using SSH
-        ssh -i ~/.ssh/id_rsa azureuser@$PUBLIC_IP "pkg install -y azure-agent"
+        # Install azure-agent using SSH with password
+        sshpass -p "test1234" ssh azureuser@$PUBLIC_IP "pkg install -y azure-agent"
 
         sleep 20
 
