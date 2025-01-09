@@ -233,13 +233,25 @@ jobs:
         # Wait for the VM to be ready
         sleep 300
 
-        echo "Running a test command on the VM..."
-        # Run a test command on the VM
+        echo "Running kyua tests on the VM..."
+        # Run kyua tests on the VM and generate a JUnit report
         az vm run-command invoke \
           --resource-group $(resourceGroup) \
           --name $VM_NAME \
           --command-id RunShellScript \
-          --scripts "echo 123"
+          --scripts "kyua test --report-format junit > /tmp/TEST-kyua_report.xml"
+
+        echo "Downloading TEST-kyua_report.xml from VM..."
+        # Download the JUnit report file
+        az vm run-command invoke \
+          --resource-group $(resourceGroup) \
+          --name $VM_NAME \
+          --command-id RunShellScript \
+          --scripts "cat /tmp/TEST-kyua_report.xml" > $(Build.ArtifactStagingDirectory)/TEST-kyua_report.xml
+
+        # Publish the JUnit report as an artifact
+        echo "Publishing TEST-kyua_report.xml as an artifact..."
+        echo "##vso[task.uploadartifact type=container;artifactname=kyua-results]$(Build.ArtifactStagingDirectory)/TEST-kyua_report.xml"
 
         if [ ${{ parameters.deleteVM }} = true ]; then
           echo "Deleting the VM..."
