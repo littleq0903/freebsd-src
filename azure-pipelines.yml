@@ -241,6 +241,8 @@ jobs:
           --command-id RunShellScript \
           --scripts "kyua test --report-format junit > /tmp/TEST-kyua_report.xml"
 
+        sleep 120
+
         echo "Downloading TEST-kyua_report.xml from VM..."
         # Download the JUnit report file
         az vm run-command invoke \
