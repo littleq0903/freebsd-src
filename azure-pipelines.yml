@@ -214,6 +214,15 @@ jobs:
         if [ -z "$(imageVersion)" ]; then echo "imageVersion is empty"; exit 1; fi
         if [ -z "$(location)" ]; then echo "location is empty"; exit 1; fi
 
+        # Define a static prefix for the resource group
+        RESOURCE_GROUP_PREFIX="myResourceGroup"
+
+        # Generate a random suffix
+        RANDOM_SUFFIX=$(date +%s | sha256sum | base64 | head -c 8)
+
+        # Combine the prefix and the random suffix
+        RESOURCE_GROUP="${RESOURCE_GROUP_PREFIX}-${RANDOM_SUFFIX}"
+
         # Construct the image reference
         IMAGE_REFERENCE="/subscriptions/8f5d9c09-fe03-4887-968e-f797aa249c7b/resourceGroups/$(resourceGroup)/providers/Microsoft.Compute/galleries/$(galleryName)/images/$(imageDefinition)/versions/$(imageVersion)"
         echo "Image reference: $IMAGE_REFERENCE"
@@ -221,7 +230,7 @@ jobs:
         echo "Creating VM..."
         # Create the VM with admin password
         az vm create \
-          --resource-group $(resourceGroup) \
+          --resource-group $RESOURCE_GROUP \
           --name $VM_NAME \
           --image $IMAGE_REFERENCE \
           --admin-username azureuser \
@@ -235,7 +244,7 @@ jobs:
 
         echo "Retrieving public IP address..."
         # Get the public IP address
-        PUBLIC_IP=$(az vm show --resource-group $(resourceGroup) --name $VM_NAME --query "publicIpAddress" -o tsv)
+        PUBLIC_IP=$(az vm show --resource-group $RESOURCE_GROUP --name $VM_NAME --query "publicIpAddress" -o tsv)
 
         echo "Installing azure-agent on the VM..."
         # Install azure-agent using SSH with password
@@ -246,7 +255,7 @@ jobs:
         echo "Running kyua tests on the VM..."
         # Run kyua tests on the VM and generate a JUnit report
         az vm run-command invoke \
-          --resource-group $(resourceGroup) \
+          --resource-group $RESOURCE_GROUP \
           --name $VM_NAME \
           --command-id RunShellScript \
           --scripts "kyua test --report-format junit > /tmp/TEST-kyua_report.xml"
@@ -256,7 +265,7 @@ jobs:
         echo "Downloading TEST-kyua_report.xml from VM..."
         # Download the JUnit report file
         az vm run-command invoke \
-          --resource-group $(resourceGroup) \
+          --resource-group $RESOURCE_GROUP \
           --name $VM_NAME \
           --command-id RunShellScript \
           --scripts "cat /tmp/TEST-kyua_report.xml" > $(Build.ArtifactStagingDirectory)/TEST-kyua_report.xml
@@ -266,13 +275,13 @@ jobs:
         echo "##vso[task.uploadartifact type=container;artifactname=kyua-results]$(Build.ArtifactStagingDirectory)/TEST-kyua_report.xml"
 
         if [ ${{ parameters.deleteVM }} = true ]; then
-          echo "Deleting the VM..."
-          # Delete the VM
-          az vm delete \
-            --resource-group $(resourceGroup) \
-            --name $VM_NAME \
-            --yes
+          echo "Deleting the resource group..."
+          # Delete the entire resource group
+          az group delete \
+            --name $RESOURCE_GROUP \
+            --yes \
+            --no-wait
         else
-          echo "Skipping VM deletion as per configuration."
+          echo "Skipping resource group deletion as per configuration."
         fi
       displayName: 'Create VM, Run Test Command, and Delete VM'
