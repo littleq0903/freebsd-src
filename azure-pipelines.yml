@@ -234,7 +234,7 @@ jobs:
           --name $VM_NAME \
           --image $IMAGE_REFERENCE \
           --admin-username azureuser \
-          --admin-password "test1234" \
+          --admin-password "Test..1234" \
           --location $(location) \
           --size Standard_D2s_v3
 
