@@ -240,7 +240,7 @@ jobs:
           --name $VM_NAME \
           --image $IMAGE_REFERENCE \
           --admin-username azureuser \
-          --admin-password "Test..1234" \
+          --admin-password "Test12345678" \
           --location $(location) \
           --size Standard_D2s_v3
 
@@ -254,7 +254,7 @@ jobs:
 
         echo "Installing azure-agent on the VM..."
         # Install azure-agent using SSH with password
-        sshpass -p "test1234" ssh azureuser@$PUBLIC_IP "pkg install -y azure-agent"
+        sshpass -p "Test12345678" ssh azureuser@$PUBLIC_IP "pkg install -y azure-agent"
 
         sleep 20
 
