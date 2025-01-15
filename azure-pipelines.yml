@@ -227,6 +227,12 @@ jobs:
         IMAGE_REFERENCE="/subscriptions/8f5d9c09-fe03-4887-968e-f797aa249c7b/resourceGroups/$(resourceGroup)/providers/Microsoft.Compute/galleries/$(galleryName)/images/$(imageDefinition)/versions/$(imageVersion)"
         echo "Image reference: $IMAGE_REFERENCE"
 
+        echo "Creating resource group..."
+        # Create the resource group
+        az group create \
+          --name $RESOURCE_GROUP \
+          --location $(location)
+
         echo "Creating VM..."
         # Create the VM with admin password
         az vm create \
